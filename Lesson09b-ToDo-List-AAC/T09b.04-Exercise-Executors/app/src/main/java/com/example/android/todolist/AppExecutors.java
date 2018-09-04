@@ -47,6 +47,10 @@ public class AppExecutors {
     public static AppExecutors getInstance() {
         if (sInstance == null) {
             synchronized (LOCK) {
+                /* diskIO is a newSingleThreadExecutor, ensuring that db transactions are done in order
+                *  networkIO is a 3-thread pool, allowing to rum different network calls simultaneously
+                *  mainThread will post runnables using a handle associated with the main looper
+                */
                 sInstance = new AppExecutors(Executors.newSingleThreadExecutor(),
                         Executors.newFixedThreadPool(3),
                         new MainThreadExecutor());
@@ -68,6 +72,7 @@ public class AppExecutors {
     }
 
     private static class MainThreadExecutor implements Executor {
+        // Being in a different class, this Executor allows accessing the main thread
         private Handler mainThreadHandler = new Handler(Looper.getMainLooper());
 
         @Override
